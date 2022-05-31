@@ -1,17 +1,28 @@
 version: 2.1
 
 jobs:
-  my_job:
+  save_hello_world_output:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - run: exit 1
-      - run:
-          name: on error
-          command: echo "Hello Error!"
-          when: on_fail
+      - run: echo "hello world" > ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  print_output_file:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
 
 workflows:
   my_workflow:
     jobs:
-      - my_job
+      - save_hello_world_output
+      - print_output_file:
+          requires:
+            - save_hello_world_output
